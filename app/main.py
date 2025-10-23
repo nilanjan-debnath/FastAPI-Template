@@ -7,6 +7,7 @@ from slowapi import _rate_limit_exceeded_handler
 from app.config import settings, setup_logger, LoggingMiddleware, limiter
 from app.db.core import create_session, DbSession
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # --- Startup ---
@@ -14,7 +15,7 @@ async def lifespan(app: FastAPI):
     app.state.logger = await setup_logger()
     app.state.logger.info("Logger setup complete.")
 
-    #setup ratelimiter
+    # setup ratelimiter
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     app.state.logger.info("Rate limiter setup complete.")
@@ -22,15 +23,14 @@ async def lifespan(app: FastAPI):
     # Create the database session
     app.state.engine, app.state.Session = await create_session()
     app.state.logger.info("Database session setup complete.")
-    
+
     # Yield control to the application
     yield
-    
+
     # --- Shutdown ---
     app.state.logger.info("Shutting down...")
     await app.state.engine.dispose()
     app.state.logger.info("Database engine disposed.")
-
 
 
 # Initialize the FastAPI app with the lifespan manager
@@ -51,14 +51,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 # Add Logging middleware
-app.add_middleware(
-    LoggingMiddleware
-)
+app.add_middleware(LoggingMiddleware)
+
 
 @app.get("/")
 @limiter.limit(settings.ratelimit_guest)
 async def root(request: Request):
-    return {"message": f"FastAPI is running on {'Production' if settings.production else 'Development'} Environment"}
+    return {
+        "message": f"FastAPI is running on {'Production' if settings.production else 'Development'} Environment"
+    }
+
 
 @app.get("/healthz")
 @limiter.limit(settings.ratelimit_guest)

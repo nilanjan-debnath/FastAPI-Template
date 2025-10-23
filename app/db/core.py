@@ -23,7 +23,6 @@ async def create_session():
     return engine, Session
 
 
-
 async def get_session(request: Request):
     # Open a new session
     async with request.app.state.Session() as session:

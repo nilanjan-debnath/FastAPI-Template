@@ -8,6 +8,7 @@ from typing import Optional
 
 Base = declarative_base()
 
+
 class Item(Base):
     __tablename__ = "items"
 

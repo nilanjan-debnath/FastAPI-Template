@@ -40,7 +40,9 @@ async def get_user_by_id(session: DbSession, username: str) -> ItemResponse:
 
 
 @router.post("/", response_model=ItemResponse, status_code=status.HTTP_201_CREATED)
-async def create_new_user(session: DbSession, user_create: NewItemInput) -> ItemResponse:
+async def create_new_user(
+    session: DbSession, user_create: NewItemInput
+) -> ItemResponse:
     try:
         return await create_user(session=session, user_create=user_create)
     except HTTPException as e:
@@ -82,4 +84,3 @@ async def delete_user_by_id(session: DbSession, username: str) -> None:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An unexpected error occurred: {e}",
         )
-    
