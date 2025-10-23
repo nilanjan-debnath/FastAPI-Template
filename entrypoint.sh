@@ -3,8 +3,8 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# echo "Running database migrations..."
-# alembic upgrade head
+echo "Running database migrations..."
+alembic upgrade head
 
 # Calculate workers based on CPU cores, default to 2*cores + 1
 CPU_CORES=$(nproc)

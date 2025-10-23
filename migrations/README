@@ -1,6 +1,10 @@
-# Generic single-database configuration.
+#Generic single-database configuration with an async dbapi.
 
 ## Initialize migrations
+```bash
+uv run alembic init -t async migrations
+```
+* If you don't want to use async connection run this command instead
 ```bash
 uv run alembic init migrations
 ```

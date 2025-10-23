@@ -1,3 +1,4 @@
+# reference: https://depot.dev/docs/container-builds/how-to-guides/optimal-dockerfiles/python-uv-dockerfile
 # Set versions as arguments
 ARG PYTHON_VERSION=3.12
 ARG UV_VERSION=0.8.3
@@ -48,11 +49,8 @@ RUN apk add --no-cache curl
 # Create a non-root user and group for security.
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-# Copy installed packages and application code from the builder stage.
-COPY --from=builder --chown=appuser:appgroup /project/app/ ./app/
-COPY --from=builder --chown=appuser:appgroup /project/migrations/ ./migrations/
-COPY --from=builder --chown=appuser:appgroup /project/entrypoint.sh ./entrypoint.sh
-COPY --from=builder --chown=appuser:appgroup /project/.venv/ ./.venv/
+# Copy application files including virtual environment from the builder stage.
+COPY --from=builder --chown=appuser:appgroup /project .
 
 # Add the virtual environment's bin directory to the PATH.
 ENV PATH="/project/.venv/bin:$PATH"
