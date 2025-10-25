@@ -1,10 +1,12 @@
+import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
-from app.config import settings, setup_logger, LoggingMiddleware, limiter
+from app.config import settings, limiter
+from app.logger import setup_logger, LoggingMiddleware
 from app.db.core import create_session, DbSession
 
 
@@ -36,9 +38,9 @@ async def lifespan(app: FastAPI):
 # Initialize the FastAPI app with the lifespan manager
 app = FastAPI(
     title="FastAPI with Centralized Lifespan",
-    docs_url=None if settings.production else "/docs",
-    redoc_url=None if settings.production else "/redoc",
-    openapi_url=None if settings.production else "/openapi.json",
+    docs_url=None if not settings.debug else "/docs",
+    redoc_url=None if not settings.debug else "/redoc",
+    openapi_url=None if not settings.debug else "/openapi.json",
     lifespan=lifespan,
 )
 
@@ -55,10 +57,11 @@ app.add_middleware(LoggingMiddleware)
 
 
 @app.get("/")
-@limiter.limit(settings.ratelimit_guest)
 async def root(request: Request):
+    request.app.state.logger.info("logging through request.app.state.logger")
+    logging.info("logging through direct logging")
     return {
-        "message": f"FastAPI is running on {'Production' if settings.production else 'Development'} Environment"
+        "message": f"FastAPI is running on {'Production' if not settings.debug else 'Development'} Environment"
     }
 
 
