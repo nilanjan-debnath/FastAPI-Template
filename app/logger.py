@@ -5,10 +5,14 @@ import sys
 import time
 from pathlib import Path
 import logging
+import sentry_sdk
+from sentry_sdk.integrations.loguru import LoguruIntegration
+from app.config import settings
 
 
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(parents=True, exist_ok=True)
+LOGGER_NAME = "FastAPI-Template"
 
 
 class InterceptHandler(logging.Handler):
@@ -29,7 +33,6 @@ class InterceptHandler(logging.Handler):
         )
 
 
-# force uvicorn to use you logging format
 for name in logging.root.manager.loggerDict:
     if name in ("uvicorn"):
         uvicorn_logger = logging.getLogger(name)
@@ -38,10 +41,14 @@ for name in logging.root.manager.loggerDict:
         uvicorn_logger.addHandler(InterceptHandler())
 
 
+def replace_name_filter(record):
+    record["name"] = LOGGER_NAME
+    return True
+
+
 async def setup_logger():
     # Remove any default handlers (avoid duplicate logs)
     logger.remove()
-
     # --- 1. Console Handler: simple human-readable output ---
     logger.add(
         sys.stdout,
@@ -51,18 +58,31 @@ async def setup_logger():
         backtrace=True,
         diagnose=True,
         enqueue=True,
+        filter=replace_name_filter,
     )
 
-    # --- 2. File Handler: structured JSON logs ---
-    logger.add(
-        "logs/app.log",
-        serialize=True,
-        rotation="10 MB",  # or "00:00" for daily rotation
-        retention="20 days",
-        compression="zip",
-        level="INFO",
-        enqueue=True,
-    )
+    if settings.debug:
+        # --- 2. File Handler: structured JSON logs ---
+        logger.add(
+            "logs/app.log",
+            serialize=True,
+            rotation="10 MB",  # or "00:00" for daily rotation
+            retention="20 days",
+            compression="zip",
+            level="INFO",
+            enqueue=True,
+        )
+    else:
+        sentry_sdk.init(
+            dsn=settings.sentry_dsn,
+            integrations=[
+                LoguruIntegration(
+                    level="INFO",  # Capture logs from INFO level and above
+                    event_level="ERROR",  # Send events to Sentry for logs at ERROR level and above
+                )
+            ],
+            enable_logs=True,
+        )
 
     return logger
 

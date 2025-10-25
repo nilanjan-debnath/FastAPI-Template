@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     origins: str = "localhost"
     database_url: str = "sqlite+aiosqlite:///db.sqlite3"
     redis_url: str = "memory://"
+    sentry_dsn: str
     ratelimit_enabled: bool = True
     ratelimit_guest: str = "6/minute"
     log_level: str = "INFO"
