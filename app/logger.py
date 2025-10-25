@@ -4,10 +4,38 @@ from loguru import logger
 import sys
 import time
 from pathlib import Path
+import logging
 
 
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+
+class InterceptHandler(logging.Handler):
+    def emit(self, record: logging.LogRecord) -> None:
+        level: str | int
+        try:
+            level = logger.level(record.levelname).name
+        except ValueError:
+            level = record.levelno
+
+        frame, depth = logging.currentframe(), 2
+        while frame and frame.f_code.co_filename == logging.__file__:
+            frame = frame.f_back
+            depth += 1
+
+        logger.opt(depth=depth, exception=record.exc_info).log(
+            level, record.getMessage()
+        )
+
+
+# force uvicorn to use you logging format
+for name in logging.root.manager.loggerDict:
+    if name in ("uvicorn"):
+        uvicorn_logger = logging.getLogger(name)
+        uvicorn_logger.handlers.clear()
+        uvicorn_logger.setLevel(logging.INFO)
+        uvicorn_logger.addHandler(InterceptHandler())
 
 
 async def setup_logger():
