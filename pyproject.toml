@@ -10,6 +10,7 @@ dependencies = [
     "fastapi>=0.119.1",
     "greenlet>=3.2.4",
     "gunicorn>=23.0.0",
+    "httpx>=0.28.1",
     "loguru>=0.7.3",
     "psycopg2-binary>=2.9.11",
     "pydantic>=2.12.3",

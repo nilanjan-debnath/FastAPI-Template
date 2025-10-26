@@ -5,10 +5,13 @@ import sys
 import time
 from pathlib import Path
 import logging
+import httpx
+from app.config import settings
 
 
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(parents=True, exist_ok=True)
+LOGGER_NAME = "FastAPI-Template"
 
 
 class InterceptHandler(logging.Handler):
@@ -37,6 +40,21 @@ for name in logging.root.manager.loggerDict:
         uvicorn_logger.setLevel(logging.INFO)
         uvicorn_logger.addHandler(InterceptHandler())
 
+    async def send_to_betterstack(message):
+        async with httpx.AsyncClient() as client:
+            await client.post(
+                settings.betterstack_ingestion_host,
+                json=message,
+                headers={
+                    "Authorization": f"Bearer {settings.betterstack_source_token}"
+                },
+            )
+
+
+def replace_name_filter(record):
+    record["name"] = LOGGER_NAME
+    return True
+
 
 async def setup_logger():
     # Remove any default handlers (avoid duplicate logs)
@@ -51,18 +69,27 @@ async def setup_logger():
         backtrace=True,
         diagnose=True,
         enqueue=True,
+        filter=replace_name_filter,
     )
 
-    # --- 2. File Handler: structured JSON logs ---
-    logger.add(
-        "logs/app.log",
-        serialize=True,
-        rotation="10 MB",  # or "00:00" for daily rotation
-        retention="20 days",
-        compression="zip",
-        level="INFO",
-        enqueue=True,
-    )
+    if settings.debug:
+        # --- 2. File Handler: structured JSON logs ---
+        logger.add(
+            "logs/app.log",
+            serialize=True,
+            rotation="10 MB",  # or "00:00" for daily rotation
+            retention="20 days",
+            compression="zip",
+            level=settings.log_level,
+            enqueue=True,
+        )
+    else:
+        logger.add(
+            send_to_betterstack,
+            serialize=True,
+            level=settings.log_level,
+            enqueue=True,
+        )
 
     return logger
 

@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     origins: str = "localhost"
     database_url: str = "sqlite+aiosqlite:///db.sqlite3"
     redis_url: str = "memory://"
+    betterstack_ingestion_host: str
+    betterstack_source_token: str
     ratelimit_enabled: bool = True
     ratelimit_guest: str = "6/minute"
     log_level: str = "INFO"
