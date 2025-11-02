@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from app.config import settings
+from app.core.config import settings
 
 
 async def create_session():

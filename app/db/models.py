@@ -17,6 +17,7 @@ class Item(Base):
     )
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     details: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    owner: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

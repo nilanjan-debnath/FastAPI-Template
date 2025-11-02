@@ -1,7 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 
 
 class Settings(BaseSettings):
@@ -11,7 +9,7 @@ class Settings(BaseSettings):
     origins: str = "localhost"
     database_url: str = "sqlite+aiosqlite:///db.sqlite3"
     redis_url: str = "memory://"
-    sentry_dsn: str
+    sentry_dsn: str = ""
     ratelimit_enabled: bool = True
     ratelimit_guest: str = "6/minute"
 
@@ -22,17 +20,10 @@ class Settings(BaseSettings):
     )
 
 
-@lru_cache()
+@lru_cache(maxsize=1)
 def get_settings():
     return Settings()
 
 
 # Instantiate settings for easy import elsewhere
 settings = get_settings()
-
-limiter = Limiter(
-    key_func=get_remote_address,
-    storage_uri=settings.redis_url,
-    strategy="moving-window",
-    enabled=settings.ratelimit_enabled,
-)
