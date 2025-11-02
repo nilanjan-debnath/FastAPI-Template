@@ -5,41 +5,42 @@ from loguru import logger as loguru_logger
 import sys
 import time
 from pathlib import Path
-import logging
+
+# import logging
 import sentry_sdk
 from sentry_sdk.integrations.loguru import LoguruIntegration
-from app.config import settings
+from app.core.config import settings
 
 
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 LOGGER_NAME = "FastAPI-Template"
 
+## ! uncomment this section if you want all the packages to use loguru log structure
+# class InterceptHandler(logging.Handler):
+#     def emit(self, record: logging.LogRecord) -> None:
+#         level: str | int
+#         try:
+#             level = loguru_logger.level(record.levelname).name
+#         except ValueError:
+#             level = record.levelno
 
-class InterceptHandler(logging.Handler):
-    def emit(self, record: logging.LogRecord) -> None:
-        level: str | int
-        try:
-            level = loguru_logger.level(record.levelname).name
-        except ValueError:
-            level = record.levelno
+#         frame, depth = logging.currentframe(), 2
+#         while frame and frame.f_code.co_filename == logging.__file__:
+#             frame = frame.f_back
+#             depth += 1
 
-        frame, depth = logging.currentframe(), 2
-        while frame and frame.f_code.co_filename == logging.__file__:
-            frame = frame.f_back
-            depth += 1
-
-        loguru_logger.opt(depth=depth, exception=record.exc_info).log(
-            level, record.getMessage()
-        )
+#         loguru_logger.opt(depth=depth, exception=record.exc_info).log(
+#             level, record.getMessage()
+#         )
 
 
-# replacing all the root logger handlers with loguru_logger
-for name in logging.root.manager.loggerDict:
-    root_logger = logging.getLogger(name)
-    root_logger.handlers.clear()
-    root_logger.setLevel(logging.INFO)
-    root_logger.addHandler(InterceptHandler())
+# # replacing all the root logger handlers with loguru_logger
+# for name in logging.root.manager.loggerDict:
+#     root_logger = logging.getLogger(name)
+#     root_logger.handlers.clear()
+#     root_logger.setLevel(logging.INFO)
+#     root_logger.addHandler(InterceptHandler())
 
 
 def replace_name_filter(record):

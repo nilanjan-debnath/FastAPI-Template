@@ -4,9 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
-from app.config import settings, limiter
-from app.logger import logger, LoggingMiddleware
-from app.db.core import create_session, DbSession
+from app.core.config import settings
+from app.core.ratelimiter import limiter
+from app.core.logger import logger, LoggingMiddleware
+from app.db.session import create_session, DbSession
 # from app.features.v1.controllers.routes import router as features_v1_router
 
 
