@@ -1,4 +1,4 @@
-# Generic single-database configuration with an async dbapi.
+# Generic single-database configuration with an async db api.
 
 ## Initialize migrations
 ```bash
