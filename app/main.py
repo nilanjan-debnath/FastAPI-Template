@@ -35,9 +35,9 @@ async def lifespan(app: FastAPI):
 # Initialize the FastAPI app with the lifespan manager
 app = FastAPI(
     title="FastAPI with Centralized Lifespan",
-    docs_url=None if settings.env == "dev" else "/docs",
-    redoc_url=None if settings.env == "dev" else "/redoc",
-    openapi_url=None if settings.env == "dev" else "/openapi.json",
+    docs_url=None if settings.env == "prod" else "/docs",
+    redoc_url=None if settings.env == "prod" else "/redoc",
+    openapi_url=None if settings.env == "prod" else "/openapi.json",
     lifespan=lifespan,
 )
 
