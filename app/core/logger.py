@@ -6,41 +6,12 @@ import sys
 import time
 from pathlib import Path
 
-# import logging
-import sentry_sdk
-from sentry_sdk.integrations.loguru import LoguruIntegration
 from app.core.config import settings
 
 
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 LOGGER_NAME = "FastAPI-Template"
-
-## ! uncomment this section if you want all the packages to use loguru log structure
-# class InterceptHandler(logging.Handler):
-#     def emit(self, record: logging.LogRecord) -> None:
-#         level: str | int
-#         try:
-#             level = loguru_logger.level(record.levelname).name
-#         except ValueError:
-#             level = record.levelno
-
-#         frame, depth = logging.currentframe(), 2
-#         while frame and frame.f_code.co_filename == logging.__file__:
-#             frame = frame.f_back
-#             depth += 1
-
-#         loguru_logger.opt(depth=depth, exception=record.exc_info).log(
-#             level, record.getMessage()
-#         )
-
-
-# # replacing all the root logger handlers with loguru_logger
-# for name in logging.root.manager.loggerDict:
-#     root_logger = logging.getLogger(name)
-#     root_logger.handlers.clear()
-#     root_logger.setLevel(logging.INFO)
-#     root_logger.addHandler(InterceptHandler())
 
 
 def replace_name_filter(record):
@@ -73,17 +44,6 @@ def setup_logger():
             compression="zip",
             level="DEBUG",
             enqueue=True,
-        )
-    else:
-        sentry_sdk.init(
-            dsn=settings.sentry_dsn,
-            integrations=[
-                LoguruIntegration(
-                    level=settings.log_level,  # Capture logs from INFO level and above
-                    event_level="ERROR",  # Send events to Sentry for logs at ERROR level and above
-                )
-            ],
-            enable_logs=True,
         )
 
     return loguru_logger
