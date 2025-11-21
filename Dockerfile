@@ -18,19 +18,31 @@ ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 # Install the uv tool for Python package management.
 COPY --from=uv_builder /uv /uvx /bin/
 
+# Install build dependencies required to compile packages like psutil.
+RUN apk add --no-cache \
+    gcc \
+    python3-dev \
+    musl-dev \
+    linux-headers \
+    make
+
 # Copy dependency definition files to leverage Docker layer caching.
 COPY pyproject.toml uv.lock ./
 
 # Create a virtual environment and install dependencies in one step.
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --no-install-project --no-dev
+    uv sync --no-install-project --no-default-groups
 
 # Copy the rest of the application source code.
 COPY . .
 
 # Install the project itself using the frozen lock file to ensure reproducible builds
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev
+    uv sync --frozen --no-default-groups
+
+# Install OpenTelemetry dependencies using opentelemetry-bootstrap to ensure compatibility
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv add --group otel-deploy $(uv run opentelemetry-bootstrap -a requirements)
 
 #########################
 # ---- Final Stage ---- #

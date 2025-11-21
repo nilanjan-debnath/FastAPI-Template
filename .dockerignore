@@ -3,6 +3,7 @@
 .gitignore
 
 # Python
+.ruff_cache/
 __pycache__/
 *.pyc
 *.pyo
@@ -22,3 +23,4 @@ docker-compose.yml
 *.DS_Store
 
 archive/
+.pre-commit-config.yaml
