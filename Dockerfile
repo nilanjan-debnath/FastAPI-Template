@@ -35,20 +35,15 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 # Install OpenTelemetry dependencies using opentelemetry-bootstrap to ensure compatibility
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv add --group otel-deploy $(uv run opentelemetry-bootstrap -a requirements)
-
-# Backup the modified toml and lock files
-RUN cp pyproject.toml pyproject.toml.bak && cp uv.lock uv.lock.bak
+  uv run opentelemetry-bootstrap -a requirements | uv pip install --requirement -
 
 # Copy the rest of the application source code.
 COPY . .
 
-# Restore the backup (Overwriting the host files with the container's modified versions)
-RUN mv pyproject.toml.bak pyproject.toml && mv uv.lock.bak uv.lock
-
 # Install the project itself using the frozen lock file to ensure reproducible builds
+# Sync the project with --inexact to preserve OTEL packages
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-default-groups --group otel-deploy
+    uv sync --frozen --no-default-groups --inexact
 
 #########################
 # ---- Final Stage ---- #

@@ -7,7 +7,7 @@ from app.features.v1.services import (
     create_user,
     update_user,
 )
-from app.db.core import DbSession
+from app.db.session import DbSession
 
 
 router = APIRouter(prefix="/api/v1/items", tags=["user", "v1"])
