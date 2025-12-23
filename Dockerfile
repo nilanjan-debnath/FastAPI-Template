@@ -65,6 +65,10 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 # Copy application files including virtual environment from the builder stage.
 COPY --from=builder --chown=appuser:appgroup /project .
 
+# creating logs folder for storing logs in debug mode
+RUN mkdir -p /project/logs && \
+    chown appuser:appgroup /project/logs
+
 # Add the virtual environment's bin directory to the PATH.
 ENV PATH="/project/.venv/bin:$PATH"
 
