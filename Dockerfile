@@ -44,13 +44,19 @@ WORKDIR /project
 ENV PYTHONUNBUFFERED=1
 
 # Install only the runtime OS dependencies needed.
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl nginx
 
 # Create a non-root user and group for security.
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 # Copy application files including virtual environment from the builder stage.
 COPY --from=builder --chown=appuser:appgroup /project .
+
+# Give appuser ownership of default Nginx directories
+RUN chown -R appuser:appgroup /var/lib/nginx /var/log/nginx /etc/nginx
+
+# Copy your Nginx config into the container
+COPY --chown=appuser:appgroup nginx.conf /etc/nginx/nginx.conf
 
 # Add the virtual environment's bin directory to the PATH.
 ENV PATH="/project/.venv/bin:$PATH"
@@ -61,12 +67,12 @@ RUN chmod +x ./entrypoint.sh
 # Switch to the non-root user.
 USER appuser
 
-# Expose the application port.
-EXPOSE 8000
+# Expose Nginx port
+EXPOSE 8080
 
 # Add a health check to monitor the application's status.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:8000/healthz || exit 1
+  CMD curl -f http://localhost:8080/healthz || exit 1
 
 # Set the container's entrypoint.
 ENTRYPOINT ["./entrypoint.sh"]
