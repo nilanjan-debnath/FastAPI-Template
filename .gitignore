@@ -13,5 +13,6 @@ __pycache__/
 *.DS_Store
 
 archive/
+logs/
 *.sqlite3
 *.log
